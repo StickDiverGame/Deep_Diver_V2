@@ -201,7 +201,6 @@ interface State {
   stop: Stop | null;
   dsmbLine: number | null;
   dsmbX: number;
-  lineLeft: number;
   hasComputer: boolean;
   comp: { ndt: number; tts: number; ceil: number; at: number };
   sand: { x: number; y: number; at: number }[];
