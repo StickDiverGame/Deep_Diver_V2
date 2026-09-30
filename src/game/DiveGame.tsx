@@ -3,7 +3,7 @@ import { DiverAnim, ManifoldArt, ValveArt, type AnimSpec, type Extra } from "./D
 import { GEAR_NAMES, GearIcon, HUNT_GEAR, TECH_GEAR, type GearKind } from "./gear";
 import { CAVE_REEL, CAVE_WORLD, CaveArt, DRY, FAR_WALL, HALL, R_BEACH, TUNNELS, caveAt, caveBounds, type CaveId } from "./caves";
 import { StageArt, W1, W2, W3, W4, WallDecor, WreckArt, type Span } from "./tech";
-import { ceiling, freshDeco, loadTissues, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
+import { ceiling, freshDeco, loadTissues, maxAscentRate, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
 import {
   bcdPuzzle,
   breathOptions,
@@ -146,6 +146,9 @@ interface ScubaDive {
   barAtStop: number | null;
   deco?: boolean;
   gases?: number[];
+  /** rolling one-minute depth window used to police the ascent rate */
+  win?: { t: number; d: number }[];
+  ascBad?: boolean;
 }
 
 interface State {
@@ -198,7 +201,6 @@ interface State {
   stop: Stop | null;
   dsmbLine: number | null;
   dsmbX: number;
-  lineLeft: number;
   hasComputer: boolean;
   comp: { ndt: number; tts: number; ceil: number; at: number };
   sand: { x: number; y: number; at: number }[];
@@ -382,7 +384,6 @@ function initial(): State {
     stop: null,
     dsmbLine: null,
     dsmbX: 0,
-    lineLeft: 20,
     hasComputer: false,
     comp: { ndt: 99, tts: 0, ceil: 0, at: 0 },
     sand: [],
@@ -979,7 +980,7 @@ export function DiveGame() {
     s.save = s.x;
     s.tanks = s.tanks.map((t) => ({ ...t, bar: 200 }));
     s.active = Math.max(0, s.tanks.findIndex((t) => t.size > 0));
-    s.lineLeft = 20;
+    // all line is rewound and replenished on the beach
     s.timerMs = 0;
     s.sdive = null;
     s.stop = null;
@@ -1099,12 +1100,13 @@ export function DiveGame() {
     s.badge = { text, at: Date.now() };
   }
 
-  /** Empty front slots (staged or lost cylinders) are refilled at the beach, 20 cylinders max. */
+  /** Empty front slots (staged or lost cylinders) are refilled at the beach: 20 cylinders, 30 once Trimix is earned. */
   function refillSlots() {
     const s = g.current;
+    const cap = s.trimix ? 30 : 20;
     for (let i = 1; i < s.tanks.length; i++) {
       const t = s.tanks[i]!;
-      if (t.empty && s.tanksIssued < 20) {
+      if (t.empty && s.tanksIssued < cap) {
         s.tanks[i] = { bar: 200, o2: t.o2, he: t.he ?? 0, size: t.size };
         s.tanksIssued += 1;
         awardItem("Cylinder");
@@ -1377,14 +1379,13 @@ export function DiveGame() {
     if (!lim) return;
 
     const descMin = Math.max(0.01, (d.maxAt - d.start) / 60000);
-    const ascMin = Math.max(0.01, (s.clock - d.maxAt) / 60000);
     const durMin = ((d.stopStart ?? s.clock) - d.start) / 60000;
     const needStop = d.max > 9;
     const bad =
       d.max > lim.max ||
       durMin > lim.durMin ||
       d.max / descMin > 20 ||
-      d.max / ascMin > 10 ||
+      !!d.ascBad ||
       (needStop && d.stopSecs < 180) ||
       (needStop && (d.barAtStop ?? 200) < 50);
 
@@ -1509,9 +1510,8 @@ export function DiveGame() {
         tts: tts(s.deco, s.depth, gases),
       };
     }
-    // spool line resets at the surface
+    // the DSMB is recovered at the surface
     if (s.depth < 0.3) {
-      s.lineLeft = 20;
       s.dsmbLine = null;
     }
     if (s.inWater && s.cave.inside !== "dry") {
@@ -1576,6 +1576,18 @@ export function DiveGame() {
     if (ceiling(s.deco) > 0) d.deco = true;
     d.gases = d.gases ?? [];
     if (!d.gases.includes(s.active)) d.gases.push(s.active);
+
+    // rolling one-minute ascent-rate check against the depth-scaled limit
+    d.win = d.win ?? [];
+    d.win.push({ t: s.clock, d: s.depth });
+    while (d.win.length > 1 && s.clock - d.win[0]!.t > 60000) d.win.shift();
+    const oldest = d.win[0]!;
+    const span = (s.clock - oldest.t) / 60000;
+    if (span >= 0.15) {
+      const rate = (oldest.d - s.depth) / span;
+      if (rate > maxAscentRate(s.depth) + 0.5) d.ascBad = true;
+    }
+
     if (s.depth >= 3 && s.depth <= 5) {
       d.stopSecs += dtG;
       if (d.stopStart === null) d.stopStart = s.clock;
@@ -1640,7 +1652,8 @@ export function DiveGame() {
     let vDown = (s.hasKit && !noAir(s) ? 0.5 : s.hasFins ? 2.1 : 1.2) * dtG;
     let vUp = vDown;
     if (s.capDescent) vDown = Math.min(vDown, (20 / 60) * dtG);
-    if (s.capAscent) vUp = Math.min(vUp, (10 / 60) * dtG);
+    // allowed ascent rate scales with depth: 10 m/min from 20 m up, depth/2 when deeper
+    if (s.capAscent) vUp = Math.min(vUp, (maxAscentRate(s.depth) / 60) * dtG);
 
     if (upKey && s.depth < 0.5 && (s.x <= BEACH_END + 0.8 || (farBeach(s.worldW) && s.x >= R_BEACH - 0.8))) {
       exitWater();
@@ -1684,7 +1697,7 @@ export function DiveGame() {
     }
     if (caveStep()) return;
     if (s.dsmbLine !== null) {
-      s.depth = Math.min(s.depth, s.lineLeft);
+      s.depth = Math.min(s.depth, s.dsmbLine);
       s.dsmbX = s.x;
     }
     // reel line can't run out (length follows the line bending over the wall)
@@ -2041,7 +2054,8 @@ export function DiveGame() {
 
   function deployDsmb() {
     const s = g.current;
-    if (s.depth > 20) {
+    // the DSMB is not tied to anything: too little line and it drags the diver up
+    if (s.depth > lineAvail()) {
       fail();
       return;
     }
@@ -2054,11 +2068,27 @@ export function DiveGame() {
     return g.current.knots.find((k) => k.id === id);
   }
 
+  /** Every reel plus the finger spool form one shared pool of line. */
+  function lineTotal() {
+    const s = g.current;
+    return (s.items.includes("spool") ? 20 : 0) + (s.items.includes("reel") ? s.reelCap : 0);
+  }
+
   function reelCap() {
     const s = g.current;
-    // reel + finger spool work together as one longer line
-    return s.reelCap + (s.items.includes("spool") ? s.lineLeft : 0) - s.reelUsed;
+    // reels are spent first, the finger spool last; cut and deployed line stays gone for the dive
+    return Math.max(0, lineTotal() - s.reelUsed - (s.dsmbLine ?? 0));
   }
+
+  /** Line still on the drums: the pool minus everything the running reel holds. */
+  function lineAvail() {
+    const s = g.current;
+    if (!s.reel) return reelCap();
+    const k = knot(s.reel.last);
+    const run = s.reel.used + (k ? lineLen(k.x, k.d, s.x, s.depth, s.worldW) : 0);
+    return Math.max(0, reelCap() - run);
+  }
+
 
   function nearWreck(w: Span, x: number, d: number, bed: (x: number) => number) {
     return x >= w.x0 - 0.4 && x <= w.x1 + 0.4 && d >= bed(x) - w.h - 1.5;
@@ -2233,7 +2263,7 @@ export function DiveGame() {
     k.d = top;
     s.segs = [...s.segs, { id: s.seq++, a: prev.id, b: k.id }];
     s.reel.used += len;
-    s.reel.last = k.id;
+    // the reel stays tied to the anchor knot, so the running line still comes off the wreck
     s.items = s.items.filter((i) => i !== "liftbag");
     spawnPickup("liftbag");
     if (s.phase === "liftBag" && w === "w2") {
@@ -2263,7 +2293,7 @@ export function DiveGame() {
   function cutLine() {
     const s = g.current;
     if (s.reel) {
-      // reel keeps the rest of its line; the loose end back to the last knot disappears
+      // aborted run: the loose dashed line vanishes, only tied-off segments stay spent
       s.reelUsed += s.reel.used;
       s.reel = null;
       prune();
@@ -2272,14 +2302,14 @@ export function DiveGame() {
     if (s.dsmbLine === null) {
       const sg = nearSeg(s.x, s.depth);
       if (!sg) return;
-      // line vanishes back to the knots in both directions
+      // line vanishes back to the knots in both directions; anything clipped to it is lost
       s.segs = s.segs.filter((x) => x.id !== sg.id);
       s.staged = s.staged.filter((st) => st.seg !== sg.id);
       prune();
       return;
     }
-    // DSMB floats away with the line paid out
-    s.lineLeft = Math.max(0, s.lineLeft - s.dsmbLine);
+    // DSMB floats away with the line paid out: that length is gone for the rest of the dive
+    s.reelUsed += s.dsmbLine;
     s.dsmbLine = null;
     s.items = s.items.filter((k) => k !== "dsmb");
     if (!s.object) spawn("dsmb");
@@ -2503,7 +2533,9 @@ export function DiveGame() {
   const logbookUnlocked = s.badges.includes("SporTechnical Diver");
   const nearLine = s.inWater && s.badges.includes("Stage") && !!nearSeg(s.x, s.depth, 2);
   const reelKnot = s.reel ? knot(s.reel.last) : null;
-  const reelLeftM = reelKnot ? reelCap() - s.reel!.used - lineLen(reelKnot.x, reelKnot.d, s.x, s.depth, s.worldW) : reelCap();
+  // one shared pool of line: spool + every reel
+  const lineLeftM = lineAvail();
+  const lineCapM = lineTotal();
   const torchPct = TORCH[s.torch.lvl] ? Math.max(0, 1 - s.torch.used / TORCH[s.torch.lvl]!.min) * 100 : 0;
   const dpvPct = DPV[s.dpv.lvl] ? Math.max(0, 1 - s.dpv.used / DPV[s.dpv.lvl]!.min) * 100 : 0;
   const light = s.cave.inside ? 1 : Math.min(1, s.depth / 150);
@@ -2949,14 +2981,9 @@ export function DiveGame() {
                 s.hover === `hud-${it}` ? "scale-150" : ""
               }`}
             >
-              {it === "spool" && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-foam">
-                  {Math.round(s.lineLeft)}m
-                </span>
-              )}
-              {it === "reel" && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-foam">
-                  {Math.max(0, Math.round(reelLeftM))}m
+              {(it === "spool" || it === "reel") && (
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-foam">
+                  {Math.max(0, Math.round(lineLeftM))}/{Math.round(lineCapM)}m
                 </span>
               )}
               {it === "torch" && (

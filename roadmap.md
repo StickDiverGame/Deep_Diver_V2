@@ -51,3 +51,9 @@
 - [x] Cave-1 objectives: recover the Cave Reel, reach the Dry Chamber and traverse between the 60 m and 80 m entrances
 - [x] Logbook has Dives and Map tabs; dives open individually with raw time/depth samples; Map shows the current full world state
 - [x] DPV training quiz displays the DPV graphic in front of the diver
+- [x] Dynamic ascent rate: 10 m/min from 20 m to the surface, current depth / 2 m/min deeper, judged over a rolling one-minute window; ascent cap, TTS and dive grading all follow it
+- [x] Unified line pool: finger spool plus every reel form one shared length, reels spent first and the spool last, single HUD meter showing remaining / total, fully replenished at the beach
+- [x] DSMB is unanchored: sending it up from deeper than the remaining line drags the diver up and ends the dive; deployed line stays spent for the rest of the dive
+- [x] Lift bag stays tied to the wreck: the reel remains anchored at the tie-off knot so the loose line still runs from that anchor to the diver; respawn behaviour unchanged
+- [x] Cutting rules: an uncommitted running line vanishes at once and the reel stops, only knotted segments count as spent; cutting a knotted segment loses its cylinders and lift bags with no second deduction
+- [x] Stage cylinder lifetime allowance rises from 20 to 30 once the Trimix badge is earned
