@@ -2294,7 +2294,7 @@ export function DiveGame() {
   function cutLine() {
     const s = g.current;
     if (s.reel) {
-      // reel keeps the rest of its line; the loose end back to the last knot disappears
+      // aborted run: the loose dashed line vanishes, only tied-off segments stay spent
       s.reelUsed += s.reel.used;
       s.reel = null;
       prune();
@@ -2303,14 +2303,14 @@ export function DiveGame() {
     if (s.dsmbLine === null) {
       const sg = nearSeg(s.x, s.depth);
       if (!sg) return;
-      // line vanishes back to the knots in both directions
+      // line vanishes back to the knots in both directions; anything clipped to it is lost
       s.segs = s.segs.filter((x) => x.id !== sg.id);
       s.staged = s.staged.filter((st) => st.seg !== sg.id);
       prune();
       return;
     }
-    // DSMB floats away with the line paid out
-    s.lineLeft = Math.max(0, s.lineLeft - s.dsmbLine);
+    // DSMB floats away with the line paid out: that length is gone for the rest of the dive
+    s.reelUsed += s.dsmbLine;
     s.dsmbLine = null;
     s.items = s.items.filter((k) => k !== "dsmb");
     if (!s.object) spawn("dsmb");
