@@ -2264,7 +2264,7 @@ export function DiveGame() {
     k.d = top;
     s.segs = [...s.segs, { id: s.seq++, a: prev.id, b: k.id }];
     s.reel.used += len;
-    s.reel.last = k.id;
+    // the reel stays tied to the anchor knot, so the running line still comes off the wreck
     s.items = s.items.filter((i) => i !== "liftbag");
     spawnPickup("liftbag");
     if (s.phase === "liftBag" && w === "w2") {
