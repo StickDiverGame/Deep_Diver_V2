@@ -980,7 +980,7 @@ export function DiveGame() {
     s.save = s.x;
     s.tanks = s.tanks.map((t) => ({ ...t, bar: 200 }));
     s.active = Math.max(0, s.tanks.findIndex((t) => t.size > 0));
-    s.lineLeft = 20;
+    // all line is rewound and replenished on the beach
     s.timerMs = 0;
     s.sdive = null;
     s.stop = null;
