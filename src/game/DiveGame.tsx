@@ -2056,7 +2056,8 @@ export function DiveGame() {
 
   function deployDsmb() {
     const s = g.current;
-    if (s.depth > 20) {
+    // the DSMB is not tied to anything: too little line and it drags the diver up
+    if (s.depth > lineAvail()) {
       fail();
       return;
     }
@@ -2069,11 +2070,27 @@ export function DiveGame() {
     return g.current.knots.find((k) => k.id === id);
   }
 
+  /** Every reel plus the finger spool form one shared pool of line. */
+  function lineTotal() {
+    const s = g.current;
+    return (s.items.includes("spool") ? 20 : 0) + (s.items.includes("reel") ? s.reelCap : 0);
+  }
+
   function reelCap() {
     const s = g.current;
-    // reel + finger spool work together as one longer line
-    return s.reelCap + (s.items.includes("spool") ? s.lineLeft : 0) - s.reelUsed;
+    // reels are spent first, the finger spool last; cut and deployed line stays gone for the dive
+    return Math.max(0, lineTotal() - s.reelUsed - (s.dsmbLine ?? 0));
   }
+
+  /** Line still on the drums: the pool minus everything the running reel holds. */
+  function lineAvail() {
+    const s = g.current;
+    if (!s.reel) return reelCap();
+    const k = knot(s.reel.last);
+    const run = s.reel.used + (k ? lineLen(k.x, k.d, s.x, s.depth, s.worldW) : 0);
+    return Math.max(0, reelCap() - run);
+  }
+
 
   function nearWreck(w: Span, x: number, d: number, bed: (x: number) => number) {
     return x >= w.x0 - 0.4 && x <= w.x1 + 0.4 && d >= bed(x) - w.h - 1.5;
