@@ -2533,7 +2533,9 @@ export function DiveGame() {
   const logbookUnlocked = s.badges.includes("SporTechnical Diver");
   const nearLine = s.inWater && s.badges.includes("Stage") && !!nearSeg(s.x, s.depth, 2);
   const reelKnot = s.reel ? knot(s.reel.last) : null;
-  const reelLeftM = reelKnot ? reelCap() - s.reel!.used - lineLen(reelKnot.x, reelKnot.d, s.x, s.depth, s.worldW) : reelCap();
+  // one shared pool of line: spool + every reel
+  const lineLeftM = lineAvail();
+  const lineCapM = lineTotal();
   const torchPct = TORCH[s.torch.lvl] ? Math.max(0, 1 - s.torch.used / TORCH[s.torch.lvl]!.min) * 100 : 0;
   const dpvPct = DPV[s.dpv.lvl] ? Math.max(0, 1 - s.dpv.used / DPV[s.dpv.lvl]!.min) * 100 : 0;
   const light = s.cave.inside ? 1 : Math.min(1, s.depth / 150);
