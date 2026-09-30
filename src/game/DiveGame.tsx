@@ -1579,6 +1579,18 @@ export function DiveGame() {
     if (ceiling(s.deco) > 0) d.deco = true;
     d.gases = d.gases ?? [];
     if (!d.gases.includes(s.active)) d.gases.push(s.active);
+
+    // rolling one-minute ascent-rate check against the depth-scaled limit
+    d.win = d.win ?? [];
+    d.win.push({ t: s.clock, d: s.depth });
+    while (d.win.length > 1 && s.clock - d.win[0]!.t > 60000) d.win.shift();
+    const oldest = d.win[0]!;
+    const span = (s.clock - oldest.t) / 60000;
+    if (span >= 0.15) {
+      const rate = (oldest.d - s.depth) / span;
+      if (rate > maxAscentRate(s.depth) + 0.5) d.ascBad = true;
+    }
+
     if (s.depth >= 3 && s.depth <= 5) {
       d.stopSecs += dtG;
       if (d.stopStart === null) d.stopStart = s.clock;
