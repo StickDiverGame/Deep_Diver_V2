@@ -1640,7 +1640,8 @@ export function DiveGame() {
     let vDown = (s.hasKit && !noAir(s) ? 0.5 : s.hasFins ? 2.1 : 1.2) * dtG;
     let vUp = vDown;
     if (s.capDescent) vDown = Math.min(vDown, (20 / 60) * dtG);
-    if (s.capAscent) vUp = Math.min(vUp, (10 / 60) * dtG);
+    // allowed ascent rate scales with depth: 10 m/min from 20 m up, depth/2 when deeper
+    if (s.capAscent) vUp = Math.min(vUp, (maxAscentRate(s.depth) / 60) * dtG);
 
     if (upKey && s.depth < 0.5 && (s.x <= BEACH_END + 0.8 || (farBeach(s.worldW) && s.x >= R_BEACH - 0.8))) {
       exitWater();
