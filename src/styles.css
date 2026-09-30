@@ -59,6 +59,23 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-sky: var(--sky);
+  --color-sky-low: var(--sky-low);
+  --color-sun: var(--sun);
+  --color-sand: var(--sand);
+  --color-sand-dark: var(--sand-dark);
+  --color-sea-shallow: var(--sea-shallow);
+  --color-sea-mid: var(--sea-mid);
+  --color-sea-deep: var(--sea-deep);
+  --color-foam: var(--foam);
+  --color-skin: var(--skin);
+  --color-suit: var(--suit);
+  --color-gear: var(--gear);
+  --color-fin-grey: var(--fin-grey);
+  --color-badge: var(--badge);
+  --color-alert: var(--alert);
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -95,6 +112,23 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+
+  /* Ocean design system */
+  --sky: oklch(0.88 0.06 220);
+  --sky-low: oklch(0.95 0.04 200);
+  --sun: oklch(0.95 0.13 95);
+  --sand: oklch(0.91 0.06 85);
+  --sand-dark: oklch(0.82 0.07 80);
+  --sea-shallow: oklch(0.78 0.11 205);
+  --sea-mid: oklch(0.58 0.11 220);
+  --sea-deep: oklch(0.32 0.09 240);
+  --foam: oklch(0.98 0.02 210);
+  --skin: oklch(0.83 0.08 60);
+  --suit: oklch(0.36 0.06 250);
+  --gear: oklch(0.72 0.14 45);
+  --fin-grey: oklch(0.62 0.01 250);
+  --badge: oklch(0.85 0.15 90);
+  --alert: oklch(0.62 0.21 25);
 }
 
 .dark {
@@ -142,3 +176,149 @@
     color: var(--color-foreground);
   }
 }
+
+/* ---------- Dive game motion system ---------- */
+@keyframes kick-a {
+  0%, 100% { transform: rotate(-16deg); }
+  50% { transform: rotate(16deg); }
+}
+@keyframes kick-b {
+  0%, 100% { transform: rotate(16deg); }
+  50% { transform: rotate(-16deg); }
+}
+@keyframes frog-a {
+  0%, 100% { transform: rotate(-4deg) translateX(0); }
+  50% { transform: rotate(-34deg) translateX(-3px); }
+}
+@keyframes frog-b {
+  0%, 100% { transform: rotate(4deg) translateX(0); }
+  50% { transform: rotate(34deg) translateX(3px); }
+}
+@keyframes scissor-a {
+  0%, 100% { transform: rotate(-26deg); }
+  50% { transform: rotate(2deg); }
+}
+@keyframes scissor-b {
+  0%, 100% { transform: rotate(26deg); }
+  50% { transform: rotate(-2deg); }
+}
+@keyframes bicycle-a {
+  0% { transform: rotate(-24deg) translateY(0); }
+  50% { transform: rotate(18deg) translateY(-3px); }
+  100% { transform: rotate(-24deg) translateY(0); }
+}
+@keyframes arm-breast {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(-52deg); }
+}
+@keyframes arm-breast-mirror {
+  0%, 100% { transform: rotate(8deg); }
+  50% { transform: rotate(52deg); }
+}
+@keyframes arm-crawl {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+@keyframes arm-crawl-off {
+  0% { transform: rotate(180deg); }
+  100% { transform: rotate(540deg); }
+}
+@keyframes arm-paddle {
+  0%, 100% { transform: rotate(-20deg); }
+  50% { transform: rotate(24deg); }
+}
+@keyframes hand-press {
+  0%, 100% { transform: translate(0, 0); }
+  45%, 65% { transform: translate(0, -2px); }
+}
+@keyframes bubble-rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.5); }
+  25% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(-6px, -22px) scale(1.15); }
+}
+@keyframes ear-pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  55% { opacity: 1; transform: scale(1.35); }
+}
+@keyframes cheek-puff {
+  0%, 100% { transform: scale(1); }
+  55% { transform: scale(1.22); }
+}
+@keyframes chest-in {
+  0%, 100% { transform: scaleX(1) scaleY(1); }
+  50% { transform: scaleX(1.18) scaleY(1.1); }
+}
+@keyframes chest-out {
+  0%, 100% { transform: scaleX(1.18) scaleY(1.1); }
+  50% { transform: scaleX(0.92) scaleY(0.95); }
+}
+@keyframes vest-puff {
+  0%, 100% { transform: scale(1); }
+  60% { transform: scale(1.3); }
+}
+@keyframes head-tilt {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-22deg); }
+}
+@keyframes jaw-move {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2.5px); }
+}
+@keyframes arrow-in {
+  0% { opacity: 0; transform: translate(-10px, -6px); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translate(0, 0); }
+}
+@keyframes arrow-out {
+  0% { opacity: 0; transform: translate(0, 0); }
+  50% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-12px, -8px); }
+}
+@keyframes badge-pop {
+  0% { opacity: 0; transform: scale(0.6) translateY(12px); }
+  60% { opacity: 1; transform: scale(1.06) translateY(0); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes fail-flash {
+  0% { opacity: 0; }
+  20% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+@keyframes tile-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.85; }
+}
+
+@utility anim-kick-a { animation: kick-a 0.5s ease-in-out infinite; }
+@utility anim-kick-b { animation: kick-b 0.5s ease-in-out infinite; }
+@utility anim-frog-a { animation: frog-a 1.4s ease-in-out infinite; }
+@utility anim-frog-b { animation: frog-b 1.4s ease-in-out infinite; }
+@utility anim-scissor-a { animation: scissor-a 1.6s ease-in-out infinite; }
+@utility anim-scissor-b { animation: scissor-b 1.6s ease-in-out infinite; }
+@utility anim-bicycle-a { animation: bicycle-a 0.9s linear infinite; }
+@utility anim-bicycle-b { animation: bicycle-a 0.9s linear infinite reverse; }
+@utility anim-arm-breast { animation: arm-breast 1.4s ease-in-out infinite; }
+@utility anim-arm-breast-mirror { animation: arm-breast-mirror 1.4s ease-in-out infinite; }
+@utility anim-arm-crawl { animation: arm-crawl 1.1s linear infinite; }
+@utility anim-arm-crawl-off { animation: arm-crawl-off 1.1s linear infinite; }
+@utility anim-arm-paddle { animation: arm-paddle 0.9s ease-in-out infinite; }
+@utility anim-hand-press { animation: hand-press 1.8s ease-in-out infinite; }
+@utility anim-bubble { animation: bubble-rise 1.8s ease-out infinite; }
+@utility anim-ear { animation: ear-pulse 1.8s ease-in-out infinite; }
+@utility anim-puff { animation: cheek-puff 1.8s ease-in-out infinite; }
+@utility anim-chest-in { animation: chest-in 3s ease-in-out infinite; }
+@utility anim-chest-out { animation: chest-out 3s ease-in-out infinite; }
+@utility anim-vest { animation: vest-puff 2.2s ease-in-out infinite; }
+@utility anim-head-tilt { animation: head-tilt 2s ease-in-out infinite; }
+@utility anim-jaw { animation: jaw-move 1.2s ease-in-out infinite; }
+@utility anim-arrow-in { animation: arrow-in 1.8s ease-in-out infinite; }
+@utility anim-arrow-out { animation: arrow-out 1.8s ease-in-out infinite; }
+@utility anim-badge { animation: badge-pop 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both; }
+@utility anim-fail { animation: fail-flash 0.7s ease-out both; }
+@utility anim-shake { animation: tile-shake 0.35s ease-in-out; }
+@utility anim-glow { animation: glow-pulse 1.6s ease-in-out infinite; }

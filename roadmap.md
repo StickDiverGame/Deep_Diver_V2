@@ -1,0 +1,53 @@
+# Scuba diving game roadmap
+
+- [x] Beach scene, diver, left/right move, down to enter water
+- [x] No instructions anywhere; surface swimming only until skills unlocked
+- [x] Going under before skill = fail, reset to last save point
+- [x] Train button, appears only while wading/in water
+- [x] Puzzle 1: 6 animations, correct = flutter kick + breast stroke, 4 correct picks
+- [x] Surface swim: reach left + right map edge 4 times -> skill badge
+- [x] Puzzle 2: breath hold, inhale -> 30-45s -> exhale, 4 successes, no timer
+- [x] Puzzle 3: 6 animations ear equalization, 4 correct picks
+- [x] Dive stage: 3-4m for 30-45s, fuzzy screen while submerged, 4 successful dives
+- [x] Breath hold locks in, badge, inhale/exhale buttons disappear
+- [x] Fuzzy object at 3-4m -> mask (within 45s)
+- [x] Puzzle 4: mask clearing animation x4; water no longer fuzzy
+- [x] Fuzzy object -> fins; puzzle 5 flutter kick no hands x4; 4 dives with faster fins
+- [x] Fuzzy object at 9-10m -> key; map width doubles, locker in new area
+- [x] Locker opens: BCD, regulator, tank; training puzzle x4 for each
+- [x] Depth gauge, pressure gauge (12L, SAC 16 L/min +16 per 10m), dive timer, 15-20m dives, rate caps, safety stop clock
+- [x] Gear hunt 20-30m (spare mask, knife, spool, DSMB, slate), DSMB deploy <=20m
+- [x] Second tank at 30m, nitrox up to 50% at beach, ppO2 <=1.6, click-hold tank switch, 40m dives
+- [x] Buhlmann ZHL-16C with gradient factors for deco stops
+- [x] Main tank on back, second tank on front; tank volumes 0-12 L on beach (0 = unused)
+- [x] Dive computer at 40 m: NDT / TTS / CEIL, adjusts for gas in use
+- [x] All tanks 0 L = breath-hold only
+- [x] Sandy wall: solid, raises sand cloud near it; darkness grows to total at 150 m; redraw DSMB
+- [x] DSMB line limit, line cutter loses DSMB + line, spool shows line left, new DSMB spawns
+- [x] Cheat mode (explains next step, skip button, CHEATER in sky)
+- [x] 2 deco dives with 2 gases -> third tank, 45-50 m dive -> SporTechnical badge
+- [x] Twinset at 40-45 m (5-25 L), twinset/manifold/longhose training, 21-99% O2
+- [x] 50 m items: compass, torch, 80 m reel, DPV, lift bag, tech fins; better torch/DPV
+- [x] Wrecks (30-35 m, 45-80 m, 100-130 m), reel tie-offs, lift bags
+- [x] DPV training mini-game, DPV use + battery; torch battery/auto-on
+- [x] Trimix training (60-120 m), He mixes, ppO2 0.18-1.9, ppN2 limit, 150 m limit
+- [x] Stage tank training + staging on lines, 20-tank limit
+- [x] Beach line from first wreck, 3 lift bags per wreck, extra 80 m reel
+- [x] Re-acquired/lost items get numbered badges (Cylinder 2, DSMB 2)
+- [x] DSMB stays above diver, vertical line from diver centre
+- [x] Reel/spool lines tie only to wall, wrecks or other lines; knot dots; keeps paying out until cut; cut removes knot-to-knot segment
+- [x] Lines bend over the wall; lift bag rises to surface / end of line
+- [x] Stage badge: ocean doubles, 200 m limit; wrecks drawn as ships lying on the wall
+- [x] Long hose + manifold training pictures redrawn; grey wide tech fins (no HUD icon)
+- [x] Deco uses N2 + He (ZHL-16C); staged tank labels; DPV shown in front of diver; timer between depth and computer
+- [x] Badge click opens practice mini-game; logbook (after SporTechnical, beach only); torch/DPV depth rating on hover
+- [x] Preserve the first flashlight/DPV upgrade; add separate 250-metre-rated, three-hour second upgrades after Stage; correct deployed DPV placement and direction
+- [x] Place every wreck on the wall surface without burying its hull; allow natural overhangs
+- [x] 170 m dive widens the ocean to a vertical far wall; fourth wreck along the 200 m bottom; cheat covers new steps
+- [x] Cave system in the far wall: entrances at 20, 40, 60 and 80 m; Dry Chamber, Stalactite Hall and Cave Reel
+- [x] Cave rules: only entrances show from outside; interiors require the diver to be inside with a torch
+- [x] Cave guideline safety: entry is allowed with a line visible in the torch beam; losing sight of every line causes failure
+- [x] Cave wall contact generates silt clouds; gas consumption pauses in the Dry Chamber
+- [x] Cave-1 objectives: recover the Cave Reel, reach the Dry Chamber and traverse between the 60 m and 80 m entrances
+- [x] Logbook has Dives and Map tabs; dives open individually with raw time/depth samples; Map shows the current full world state
+- [x] DPV training quiz displays the DPV graphic in front of the diver
