@@ -1511,9 +1511,8 @@ export function DiveGame() {
         tts: tts(s.deco, s.depth, gases),
       };
     }
-    // spool line resets at the surface
+    // the DSMB is recovered at the surface
     if (s.depth < 0.3) {
-      s.lineLeft = 20;
       s.dsmbLine = null;
     }
     if (s.inWater && s.cave.inside !== "dry") {
