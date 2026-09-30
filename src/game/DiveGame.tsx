@@ -2981,14 +2981,9 @@ export function DiveGame() {
                 s.hover === `hud-${it}` ? "scale-150" : ""
               }`}
             >
-              {it === "spool" && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-foam">
-                  {Math.round(s.lineLeft)}m
-                </span>
-              )}
-              {it === "reel" && (
-                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold text-foam">
-                  {Math.max(0, Math.round(reelLeftM))}m
+              {(it === "spool" || it === "reel") && (
+                <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-foam">
+                  {Math.max(0, Math.round(lineLeftM))}/{Math.round(lineCapM)}m
                 </span>
               )}
               {it === "torch" && (
