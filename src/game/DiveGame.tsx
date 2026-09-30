@@ -146,6 +146,9 @@ interface ScubaDive {
   barAtStop: number | null;
   deco?: boolean;
   gases?: number[];
+  /** rolling one-minute depth window used to police the ascent rate */
+  win?: { t: number; d: number }[];
+  ascBad?: boolean;
 }
 
 interface State {
