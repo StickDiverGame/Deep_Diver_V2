@@ -1698,7 +1698,7 @@ export function DiveGame() {
     }
     if (caveStep()) return;
     if (s.dsmbLine !== null) {
-      s.depth = Math.min(s.depth, s.lineLeft);
+      s.depth = Math.min(s.depth, s.dsmbLine);
       s.dsmbX = s.x;
     }
     // reel line can't run out (length follows the line bending over the wall)
