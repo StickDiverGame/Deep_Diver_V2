@@ -1380,14 +1380,13 @@ export function DiveGame() {
     if (!lim) return;
 
     const descMin = Math.max(0.01, (d.maxAt - d.start) / 60000);
-    const ascMin = Math.max(0.01, (s.clock - d.maxAt) / 60000);
     const durMin = ((d.stopStart ?? s.clock) - d.start) / 60000;
     const needStop = d.max > 9;
     const bad =
       d.max > lim.max ||
       durMin > lim.durMin ||
       d.max / descMin > 20 ||
-      d.max / ascMin > 10 ||
+      !!d.ascBad ||
       (needStop && d.stopSecs < 180) ||
       (needStop && (d.barAtStop ?? 200) < 50);
 
