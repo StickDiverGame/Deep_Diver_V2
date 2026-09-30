@@ -1102,12 +1102,13 @@ export function DiveGame() {
     s.badge = { text, at: Date.now() };
   }
 
-  /** Empty front slots (staged or lost cylinders) are refilled at the beach, 20 cylinders max. */
+  /** Empty front slots (staged or lost cylinders) are refilled at the beach: 20 cylinders, 30 once Trimix is earned. */
   function refillSlots() {
     const s = g.current;
+    const cap = s.trimix ? 30 : 20;
     for (let i = 1; i < s.tanks.length; i++) {
       const t = s.tanks[i]!;
-      if (t.empty && s.tanksIssued < 20) {
+      if (t.empty && s.tanksIssued < cap) {
         s.tanks[i] = { bar: 200, o2: t.o2, he: t.he ?? 0, size: t.size };
         s.tanksIssued += 1;
         awardItem("Cylinder");
