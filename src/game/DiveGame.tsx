@@ -3,7 +3,7 @@ import { DiverAnim, ManifoldArt, ValveArt, type AnimSpec, type Extra } from "./D
 import { GEAR_NAMES, GearIcon, HUNT_GEAR, TECH_GEAR, type GearKind } from "./gear";
 import { CAVE_REEL, CAVE_WORLD, CaveArt, DRY, FAR_WALL, HALL, R_BEACH, TUNNELS, caveAt, caveBounds, type CaveId } from "./caves";
 import { StageArt, W1, W2, W3, W4, WallDecor, WreckArt, type Span } from "./tech";
-import { ceiling, freshDeco, loadTissues, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
+import { ceiling, freshDeco, loadTissues, maxAscentRate, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
 import {
   bcdPuzzle,
   breathOptions,
