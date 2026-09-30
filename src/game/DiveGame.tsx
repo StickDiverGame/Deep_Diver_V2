@@ -384,7 +384,6 @@ function initial(): State {
     stop: null,
     dsmbLine: null,
     dsmbX: 0,
-    lineLeft: 20,
     hasComputer: false,
     comp: { ndt: 99, tts: 0, ceil: 0, at: 0 },
     sand: [],
