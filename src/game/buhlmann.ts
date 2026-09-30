@@ -106,7 +106,12 @@ export function ndt(d: Deco, depth: number, gas: Gas) {
   return Math.floor(t / 60);
 }
 
-/** Time to surface in minutes: 10 m/min ascent plus every stop, picking the best gas at each depth. */
+/** Maximum allowed ascent rate in m/min: 10 from 20 m up, depth/2 when deeper. */
+export function maxAscentRate(depth: number) {
+  return depth > 20 ? depth / 2 : 10;
+}
+
+/** Time to surface in minutes: depth-scaled ascent plus every stop, picking the best gas at each depth. */
 export function tts(d: Deco, depth: number, gases: Gas[]) {
   const sim = copy(d);
   const air: Gas = { o2: 0.21, he: 0 };
@@ -123,10 +128,13 @@ export function tts(d: Deco, depth: number, gases: Gas[]) {
       loadTissues(sim, z, best(z), 30);
       t += 30;
     } else {
-      loadTissues(sim, z, best(z), 6);
-      t += 6;
+      // seconds to travel this metre at the allowed rate for the current depth
+      const step = 60 / maxAscentRate(z);
+      loadTissues(sim, z, best(z), step);
+      t += step;
       z = next;
     }
   }
   return Math.ceil(t / 60);
 }
+
