@@ -21,7 +21,8 @@ export type GearKind =
   | "torch3"
   | "dpv3"
   | "reel2"
-  | "reel3";
+  | "reel3"
+  | "reel4";
 
 export const GEAR_NAMES: Record<GearKind, string> = {
   depthGauge: "Depth Gauge",
@@ -47,6 +48,7 @@ export const GEAR_NAMES: Record<GearKind, string> = {
   dpv3: "250 m DPV",
   reel2: "Second Reel",
   reel3: "Cave Reel",
+  reel4: "100 m Reel",
 };
 
 export const TECH_GEAR: GearKind[] = ["compass", "torch", "reel", "dpv", "liftbag", "techFins"];
@@ -159,11 +161,13 @@ export function GearIcon({ kind }: { kind: GearKind }) {
     case "reel":
     case "reel2":
     case "reel3":
+    case "reel4":
       return (
         <g>
           <rect x={-0.15} y={-0.95} width={0.3} height={0.5} fill="var(--color-gear)" />
           <circle r={0.6} fill="var(--color-gear)" />
-          <circle r={0.4} fill={kind === "reel2" ? "var(--color-badge)" : "var(--color-foam)"} />
+          <circle r={0.4} fill={kind === "reel2" ? "var(--color-badge)" : kind === "reel4" ? "var(--color-alert)" : "var(--color-foam)"} />
+
           <rect x={0.55} y={-0.1} width={0.4} height={0.2} fill="var(--color-gear)" />
         </g>
       );
