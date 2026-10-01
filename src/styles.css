@@ -296,6 +296,8 @@
 
 @utility anim-kick-a { animation: kick-a 0.5s ease-in-out infinite; }
 @utility anim-kick-b { animation: kick-b 0.5s ease-in-out infinite; }
+@utility anim-knee-a { animation: knee-a 1.4s ease-in-out infinite; }
+@utility anim-knee-b { animation: knee-b 1.4s ease-in-out infinite; }
 @utility anim-frog-a { animation: frog-a 1.4s ease-in-out infinite; }
 @utility anim-frog-b { animation: frog-b 1.4s ease-in-out infinite; }
 @utility anim-scissor-a { animation: scissor-a 1.6s ease-in-out infinite; }
