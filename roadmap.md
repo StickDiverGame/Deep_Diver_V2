@@ -63,4 +63,5 @@
 - [x] Separate line counters: finger spool shows its own 20 m reserve, the reels show their own remaining length, single numbers instead of fractions
 - [x] Gas density on the dive computer after the Trimix badge: DENS g/L, amber over 5.2, flashing alert over 6.0
 - [x] Full-fidelity logbook map: 1:1 world scale, depth contours and distance ruler, cave interior with named chambers and entrance depths, real wreck artwork and staged cylinder labels when zoomed in
+- [x] High-detail diver: articulated knees and elbows, contoured wetsuit with shading, neoprene hood, frameless mask with lens highlight, wing and backplate harness with D-rings, cylinders with boots/valves/first stages, vented jet fins with spring straps, wrist dive computer
 
