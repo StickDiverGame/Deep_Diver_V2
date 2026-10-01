@@ -2690,9 +2690,9 @@ export function DiveGame() {
             <stop offset="45%" stopColor="var(--color-sea-mid)" />
             <stop offset="100%" stopColor="var(--color-sea-deep)" />
           </linearGradient>
-          <linearGradient id="bedGrad" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="bedGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="140">
             <stop offset="0%" stopColor="var(--color-sand)" />
-            <stop offset="18%" stopColor="var(--color-sand-dark)" />
+            <stop offset="22%" stopColor="var(--color-sand-dark)" />
             <stop offset="55%" stopColor="var(--color-rock)" />
             <stop offset="100%" stopColor="var(--color-rock-dark)" />
           </linearGradient>
