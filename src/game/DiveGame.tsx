@@ -2670,7 +2670,8 @@ export function DiveGame() {
       (curTank?.he ?? 0) * 0.179);
 
 
-  const seabed = `M ${BED(s.worldW).map(([x, y]) => `${x} ${y}`).join(" L ")} L ${s.worldW + 10} 240 L -10 240 Z`;
+  const bedLine = `M ${BED(s.worldW).map(([x, y]) => `${x} ${y}`).join(" L ")}`;
+  const seabed = `${bedLine} L ${s.worldW + 10} 240 L -10 240 Z`;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-sea-deep font-body select-none">
@@ -2688,6 +2689,12 @@ export function DiveGame() {
             <stop offset="0%" stopColor="var(--color-sea-shallow)" />
             <stop offset="45%" stopColor="var(--color-sea-mid)" />
             <stop offset="100%" stopColor="var(--color-sea-deep)" />
+          </linearGradient>
+          <linearGradient id="bedGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="140">
+            <stop offset="0%" stopColor="var(--color-sand)" />
+            <stop offset="22%" stopColor="var(--color-sand-dark)" />
+            <stop offset="55%" stopColor="var(--color-rock)" />
+            <stop offset="100%" stopColor="var(--color-rock-dark)" />
           </linearGradient>
           <filter id="blurScene">
             <feGaussianBlur stdDeviation="0.09" />
@@ -2719,26 +2726,71 @@ export function DiveGame() {
             fill="var(--color-sand)"
           />
           <rect x={-10} y={-0.35} width={BEACH_END + 1.2} height={0.35} fill="var(--color-sand-dark)" opacity={0.5} />
-          {/* seabed */}
-          <path d={seabed} fill="var(--color-sand-dark)" opacity={0.85} />
-          {/* corals */}
+          {/* seabed: sand crust over silt and bedrock */}
+          <path d={seabed} fill="url(#bedGrad)" opacity={0.95} />
+          <path d={bedLine} stroke="var(--color-sand)" strokeWidth={0.55} fill="none" opacity={0.75} />
+          <path d={bedLine} stroke="var(--color-silt)" strokeWidth={0.18} fill="none" opacity={0.6} />
+          {/* rock ledges and boulders stepping down the wall */}
+          {Array.from({ length: Math.ceil(s.worldW / 11) }).map((_, i) => {
+            const bx = 6 + i * 11 + ((i * 29) % 5) * 0.8;
+            if (bx > s.worldW) return null;
+            const by = bedDepth(bx, s.worldW);
+             const w = 0.7 + ((i * 17) % 4) * 0.22;
+             return (
+               <path
+                 key={`rk${i}`}
+                 d={`M ${bx - w} ${by + 0.25} Q ${bx - w * 0.6} ${by - 0.45} ${bx} ${by - 0.38} Q ${bx + w * 0.7} ${by - 0.5} ${bx + w} ${by + 0.25} Z`}
+                 fill={i % 2 ? "var(--color-rock)" : "var(--color-rock-dark)"}
+                 opacity={0.3}
+               />
+             );
+          })}
+          {/* pebble and shell scatter on the sand */}
+          {Array.from({ length: 90 }).map((_, i) => {
+            const px = 4 + i * 2.1 + ((i * 31) % 7) * 0.3;
+            if (px > s.worldW) return null;
+            const py = bedDepth(px, s.worldW) - 0.08;
+            return (
+              <ellipse
+                key={`pb${i}`}
+                cx={px}
+                cy={py}
+                rx={0.1 + ((i * 13) % 3) * 0.05}
+                ry={0.05 + ((i * 7) % 3) * 0.02}
+                fill={i % 3 === 0 ? "var(--color-foam)" : "var(--color-rock)"}
+                opacity={0.4}
+              />
+            );
+          })}
+          {/* shallow reef: fans, branching coral and kelp */}
           {Array.from({ length: 40 }).map((_, i) => {
             const cx = 10 + i * 4.3;
-            const cy = 6 + ((i * 37) % 5) * 0.9;
+            const bd = bedDepth(cx, s.worldW);
+            if (cx > s.worldW || bd > 34) return null;
+            const cy = bd - 0.1;
+            const v = (i * 7) % 3;
             return (
-              <g key={i} opacity={0.55}>
-                <path
-                  d={`M ${cx} ${cy} q 0.3 -1 0.9 -1.4`}
-                  stroke="var(--color-gear)"
-                  strokeWidth={0.18}
-                  fill="none"
-                />
-                <path
-                  d={`M ${cx} ${cy} q -0.4 -0.9 -1 -1.2`}
-                  stroke="var(--color-badge)"
-                  strokeWidth={0.16}
-                  fill="none"
-                />
+              <g key={i} transform={`translate(${cx}, ${cy})`} opacity={0.7}>
+                {v === 0 && (
+                  <g stroke="var(--color-coral-pink)" strokeWidth={0.1} fill="none" strokeLinecap="round">
+                    <path d="M 0 0 L 0 -0.5" />
+                    <path d="M 0 -0.5 q -0.6 -0.4 -0.75 -1.1 M 0 -0.5 q 0.6 -0.38 0.72 -1.05 M 0 -0.5 q -0.05 -0.7 0.04 -1.25" />
+                    <path d="M -0.45 -1.1 q 0.45 -0.22 0.9 -0.02" strokeWidth={0.05} />
+                  </g>
+                )}
+                {v === 1 && (
+                  <g stroke="var(--color-gear)" strokeWidth={0.14} fill="none" strokeLinecap="round">
+                    <path d="M 0 0 q 0.3 -1 0.9 -1.4 M 0 0 q -0.4 -0.9 -1 -1.2 M 0 0 q 0.05 -0.8 -0.1 -1.5" />
+                    <ellipse cx={0} cy={0.05} rx={0.6} ry={0.14} fill="var(--color-sand)" stroke="none" opacity={0.5} />
+                  </g>
+                )}
+                {v === 2 && (
+                  <g stroke="var(--color-kelp)" strokeWidth={0.1} fill="none" strokeLinecap="round">
+                    <path d="M 0 0 Q -0.4 -1.1 -0.15 -2.1" />
+                    <path d="M 0.2 0 Q 0.55 -0.9 0.3 -1.7" strokeWidth={0.08} />
+                    <ellipse cx={-0.3} cy={-0.35} rx={0.5} ry={0.3} fill="var(--color-coral-violet)" stroke="none" opacity={0.4} />
+                  </g>
+                )}
               </g>
             );
           })}
