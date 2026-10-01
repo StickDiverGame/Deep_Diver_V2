@@ -186,6 +186,16 @@
   0%, 100% { transform: rotate(16deg); }
   50% { transform: rotate(-16deg); }
 }
+@keyframes knee-a {
+  0%, 100% { transform: rotate(-6deg); }
+  40% { transform: rotate(16deg); }
+  70% { transform: rotate(-2deg); }
+}
+@keyframes knee-b {
+  0%, 100% { transform: rotate(6deg); }
+  40% { transform: rotate(-16deg); }
+  70% { transform: rotate(2deg); }
+}
 @keyframes frog-a {
   0%, 100% { transform: rotate(-4deg) translateX(0); }
   50% { transform: rotate(-34deg) translateX(-3px); }
