@@ -2670,7 +2670,8 @@ export function DiveGame() {
       (curTank?.he ?? 0) * 0.179);
 
 
-  const seabed = `M ${BED(s.worldW).map(([x, y]) => `${x} ${y}`).join(" L ")} L ${s.worldW + 10} 240 L -10 240 Z`;
+  const bedLine = `M ${BED(s.worldW).map(([x, y]) => `${x} ${y}`).join(" L ")}`;
+  const seabed = `${bedLine} L ${s.worldW + 10} 240 L -10 240 Z`;
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-sea-deep font-body select-none">
