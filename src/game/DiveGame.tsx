@@ -2765,7 +2765,9 @@ export function DiveGame() {
           {/* shallow reef: fans, branching coral and kelp */}
           {Array.from({ length: 40 }).map((_, i) => {
             const cx = 10 + i * 4.3;
-            const cy = 6 + ((i * 37) % 5) * 0.9;
+            const bd = bedDepth(cx, s.worldW);
+            if (cx > s.worldW || bd > 34) return null;
+            const cy = bd - 0.1;
             const v = (i * 7) % 3;
             return (
               <g key={i} transform={`translate(${cx}, ${cy})`} opacity={0.7}>
