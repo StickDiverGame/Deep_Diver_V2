@@ -57,3 +57,10 @@
 - [x] Lift bag stays tied to the wreck: the reel remains anchored at the tie-off knot so the loose line still runs from that anchor to the diver; respawn behaviour unchanged
 - [x] Cutting rules: an uncommitted running line vanishes at once and the reel stops, only knotted segments count as spent; cutting a knotted segment loses its cylinders and lift bags with no second deduction
 - [x] Stage cylinder lifetime allowance rises from 20 to 30 once the Trimix badge is earned
+- [x] 100 m reel on the third wreck once the "Abyss Wreck" badge is earned: +100 m to the shared line pool
+- [x] Explore mode: toggle beside "Cheat" after the "Abyss Wreck" badge; the diver never fails and tanks stop depleting until it is switched off
+- [x] Allow descent during decompression stops: keep the stop ceiling as an ascent limit only, resume Buhlmann on-gassing when going deeper, recalculate ceiling/TTS, enforce ppO2 and ppN2
+- [x] Separate line counters: finger spool shows its own 20 m reserve, the reels show their own remaining length, single numbers instead of fractions
+- [x] Gas density on the dive computer after the Trimix badge: DENS g/L, amber over 5.2, flashing alert over 6.0
+- [x] Full-fidelity logbook map: 1:1 world scale, depth contours and distance ruler, cave interior with named chambers and entrance depths, real wreck artwork and staged cylinder labels when zoomed in
+

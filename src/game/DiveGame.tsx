@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { DiverAnim, ManifoldArt, ValveArt, type AnimSpec, type Extra } from "./DiverAnim";
 import { GEAR_NAMES, GearIcon, HUNT_GEAR, TECH_GEAR, type GearKind } from "./gear";
-import { CAVE_REEL, CAVE_WORLD, CaveArt, DRY, FAR_WALL, HALL, R_BEACH, TUNNELS, caveAt, caveBounds, type CaveId } from "./caves";
+import { CAVE_REEL, CAVE_WORLD, CaveArt, DRY, FAR_WALL, HALL, R_BEACH, SPIKES, TUNNELS, caveAt, caveBounds, type CaveId } from "./caves";
 import { StageArt, W1, W2, W3, W4, WallDecor, WreckArt, type Span } from "./tech";
 import { ceiling, freshDeco, loadTissues, maxAscentRate, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
 import {
@@ -229,6 +229,8 @@ interface State {
   cur: { n: number; start: number; samples: [number, number][]; max: number } | null;
   logOpen: boolean;
   cave: { reel: boolean; dry: boolean; through: boolean; inside: CaveId | null; enter: CaveId | null };
+  explore: boolean;
+  reel4Taken: boolean;
 }
 
 const TRAIN_PHASES: Phase[] = [
@@ -412,6 +414,8 @@ function initial(): State {
     cur: null,
     logOpen: false,
     cave: { reel: false, dry: false, through: false, inside: null, enter: null },
+    explore: false,
+    reel4Taken: false,
   };
 }
 
@@ -648,7 +652,7 @@ const MAP_MAX_Z = 12;
 function WorldMap({ s }: { s: State }) {
   const W = s.worldW;
   const maxD = Math.max(20, ...BED(W).filter(([x]) => x <= W + 1).map(([, d]) => d)) + 5;
-  const sx = 2; // metres per world unit
+  const sx = 1; // true 1:1 world coordinates, so game artwork can be drawn straight in
   const bed: string[] = [];
   for (let x = 0; x <= W; x += 0.5) bed.push(`${x * sx},${bedDepth(x, W)}`);
   const caves = W >= CAVE_WORLD;
@@ -663,6 +667,9 @@ function WorldMap({ s }: { s: State }) {
   const [grab, setGrab] = useState(false);
   const view = useRef({ zoom: 1, off: { x: 0, y: 0 } });
   view.current = { zoom, off };
+  // zoomed in: swap the chart symbols for the real game artwork
+  const detail = zoom >= 2.5;
+
   const drag = useRef<{ px: number; py: number; ox: number; oy: number } | null>(null);
 
   const zoomAt = (px: number, py: number, next: number) => {
@@ -747,40 +754,125 @@ function WorldMap({ s }: { s: State }) {
         style={{ transform: `translate(${off.x}px, ${off.y}px) scale(${zoom})` }}
       >
         <svg ref={svgRef} viewBox={`-4 -6 ${W * sx + 8} ${maxD + 10}`} className="h-full w-full" preserveAspectRatio="xMidYMid meet">
-          <rect x={0} y={0} width={W * sx} height={maxD} fill="var(--color-sea-mid)" opacity={0.5} />
-          <line x1={0} y1={0} x2={W * sx} y2={0} stroke="var(--color-foam)" strokeWidth={0.6} />
-          <polygon points={`0,${maxD} ${bed.join(" ")} ${W * sx},${maxD}`} fill="var(--color-sand)" opacity={0.85} />
-          {caves && (
-            <g fill="var(--color-sea-deep)" stroke="none">
-              {TUNNELS.map((t) => (
-                <polyline key={t.id} points={t.pts.map(([x, d]) => `${x * sx},${d}`).join(" ")} fill="none" stroke="var(--color-sea-deep)" strokeWidth={t.hh * 2.4} strokeLinejoin="round" />
-              ))}
-              <rect x={HALL.x0 * sx} y={HALL.d0} width={(Math.min(HALL.x1, W) - HALL.x0) * sx} height={HALL.d1 - HALL.d0} />
-              <rect x={DRY.x0 * sx} y={DRY.d0} width={(Math.min(DRY.x1, W) - DRY.x0) * sx} height={DRY.d1 - DRY.d0} />
+          <defs>
+            <linearGradient id="mapWater" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="var(--color-sea-shallow)" stopOpacity={0.55} />
+              <stop offset="35%" stopColor="var(--color-sea-mid)" stopOpacity={0.6} />
+              <stop offset="100%" stopColor="var(--color-sea-deep)" stopOpacity={0.95} />
+            </linearGradient>
+          </defs>
+          <rect x={0} y={0} width={W * sx} height={maxD} fill="url(#mapWater)" />
+          <line x1={0} y1={0} x2={W * sx} y2={0} stroke="var(--color-foam)" strokeWidth={0.4} />
+          {/* depth contours */}
+          {[10, 20, 30, 40, 60, 80, 100, 150, 200].filter((d) => d < maxD).map((d) => (
+            <g key={d}>
+              <line x1={0} y1={d} x2={W * sx} y2={d} stroke="var(--color-foam)" strokeWidth={0.12} opacity={0.22} strokeDasharray="2 2" />
+              <text x={0.6} y={d - 0.6} fontSize={2.2} fill="var(--color-foam)" opacity={0.6}>{d} m</text>
             </g>
+          ))}
+          {/* distance ruler along the surface */}
+          {Array.from({ length: Math.floor(W / 25) + 1 }).map((_, i) => {
+            const x = i * 25;
+            return (
+              <g key={`t${x}`}>
+                <line x1={x * sx} y1={-1.4} x2={x * sx} y2={0} stroke="var(--color-foam)" strokeWidth={0.15} opacity={0.5} />
+                <text x={x * sx} y={-2.2} fontSize={2.2} textAnchor="middle" fill="var(--color-foam)" opacity={0.6}>{x}</text>
+              </g>
+            );
+          })}
+          <polygon points={`0,${maxD} ${bed.join(" ")} ${W * sx},${maxD}`} fill="var(--color-sand)" opacity={0.9} />
+          <polyline points={bed.join(" ")} fill="none" stroke="var(--color-sand-dark)" strokeWidth={0.25} />
+          {caves && (
+            detail ? (
+              <g>
+                {TUNNELS.map((t) => (
+                  <path key={t.id} d={`M ${t.pts.map(([x, d]) => `${x} ${d - t.hh}`).join(" L ")} L ${[...t.pts].reverse().map(([x, d]) => `${x} ${d + t.hh}`).join(" L ")} Z`} fill="var(--color-sea-deep)" />
+                ))}
+                <rect x={HALL.x0} y={HALL.d0} width={Math.min(HALL.x1, W) - HALL.x0} height={HALL.d1 - HALL.d0} rx={1.5} fill="var(--color-sea-deep)" />
+                {SPIKES.map((sp, i) => (
+                  <path
+                    key={i}
+                    d={sp.up
+                      ? `M ${sp.x - sp.w} ${HALL.d0} L ${sp.x} ${HALL.d0 + sp.len} L ${sp.x + sp.w} ${HALL.d0} Z`
+                      : `M ${sp.x - sp.w} ${HALL.d1} L ${sp.x} ${HALL.d1 - sp.len} L ${sp.x + sp.w} ${HALL.d1} Z`}
+                    fill="var(--color-sand-dark)"
+                  />
+                ))}
+                <rect x={DRY.x0} y={DRY.d0} width={Math.min(DRY.x1, W) - DRY.x0} height={DRY.d1 - DRY.d0} rx={1.2} fill="var(--color-sea-deep)" />
+                <rect x={DRY.x0} y={DRY.d0} width={Math.min(DRY.x1, W) - DRY.x0} height={DRY.water - DRY.d0} rx={1} fill="var(--color-sky-low)" opacity={0.4} />
+                <text x={(DRY.x0 + Math.min(DRY.x1, W)) / 2} y={DRY.d0 - 1} fontSize={2} textAnchor="middle" fill="var(--color-foam)" opacity={0.75}>Dry Chamber</text>
+                <text x={HALL.x0 + 4} y={HALL.d0 - 1} fontSize={2} fill="var(--color-foam)" opacity={0.75}>Stalactite Hall</text>
+              </g>
+            ) : (
+              <g fill="var(--color-sea-deep)" stroke="none">
+                {TUNNELS.map((t) => (
+                  <polyline key={t.id} points={t.pts.map(([x, d]) => `${x * sx},${d}`).join(" ")} fill="none" stroke="var(--color-sea-deep)" strokeWidth={t.hh * 2.4} strokeLinejoin="round" />
+                ))}
+                <rect x={HALL.x0 * sx} y={HALL.d0} width={(Math.min(HALL.x1, W) - HALL.x0) * sx} height={HALL.d1 - HALL.d0} />
+                <rect x={DRY.x0 * sx} y={DRY.d0} width={(Math.min(DRY.x1, W) - DRY.x0) * sx} height={DRY.d1 - DRY.d0} />
+              </g>
+            )
           )}
+          {caves && TUNNELS.map((t) => (
+            <g key={`e${t.id}`}>
+              <circle cx={t.pts[0]![0]} cy={t.pts[0]![1]} r={0.9} fill="none" stroke="var(--color-sun)" strokeWidth={0.2} />
+              <text x={t.pts[0]![0] - 1.6} y={t.pts[0]![1] - 1.4} fontSize={2} textAnchor="end" fill="var(--color-sun)" opacity={0.85}>
+                {Math.round(t.pts[0]![1])} m
+              </text>
+            </g>
+          ))}
           {wrecks.map((w, i) => {
             const x1 = Math.min(w.x1, W);
             const d = bedDepth((w.x0 + x1) / 2, W);
-            return <rect key={i} x={w.x0 * sx} y={d - w.h} width={(x1 - w.x0) * sx} height={w.h} fill="var(--color-sand-dark)" opacity={0.9} />;
+            return (
+              <g key={i}>
+                {detail ? (
+                  <WreckArt span={{ ...w, x1 }} bed={(x) => bedDepth(x, W)} />
+                ) : (
+                  <rect x={w.x0 * sx} y={d - w.h} width={(x1 - w.x0) * sx} height={w.h} fill="var(--color-sand-dark)" opacity={0.9} />
+                )}
+                <text x={((w.x0 + x1) / 2) * sx} y={d - w.h - 1.2} fontSize={2.2} textAnchor="middle" fill="var(--color-foam)" opacity={0.8}>
+                  Wreck {i + 1} · {Math.round(d)} m
+                </text>
+              </g>
+            );
           })}
           {s.segs.filter((g) => !g.hidden).map((g) => {
             const a = kn.get(g.a);
             const b = kn.get(g.b);
             if (!a || !b) return null;
-            return <line key={g.id} x1={a.x * sx} y1={a.d} x2={b.x * sx} y2={b.d} stroke="var(--color-foam)" strokeWidth={0.4} />;
+            return <line key={g.id} x1={a.x * sx} y1={a.d} x2={b.x * sx} y2={b.d} stroke="var(--color-sun)" strokeWidth={0.3} opacity={0.9} />;
           })}
           {s.knots.map((k) => (
-            <circle key={k.id} cx={k.x * sx} cy={k.d} r={0.8} fill="var(--color-foam)" />
+            <circle key={k.id} cx={k.x * sx} cy={k.d} r={0.5} fill="var(--color-foam)" />
           ))}
           {s.staged.map((t, i) => (
-            <rect key={i} x={t.x * sx - 0.8} y={t.d - 1.5} width={1.6} height={3} fill="var(--color-badge)" />
+            <g key={i}>
+              <rect x={t.x * sx - 0.5} y={t.d - 1.6} width={1} height={3.2} rx={0.5} fill="var(--color-badge)" />
+              <rect x={t.x * sx - 0.18} y={t.d - 2.1} width={0.36} height={0.6} fill="var(--color-gear)" />
+              {detail && (
+                <text x={t.x * sx + 1} y={t.d} fontSize={1.8} fill="var(--color-foam)" opacity={0.85}>
+                  {Math.round(t.tank.o2 * 100)}%
+                </text>
+              )}
+            </g>
           ))}
           {s.pickups.map((o, i) => (
-            <circle key={i} cx={o.x * sx} cy={o.depth} r={1.2} fill="var(--color-badge)" opacity={0.9} />
+            <circle key={i} cx={o.x * sx} cy={o.depth} r={0.9} fill="var(--color-badge)" opacity={0.9} />
           ))}
-          <circle cx={s.x * sx} cy={Math.max(-2, s.depth)} r={1.8} fill="var(--color-alert)" stroke="var(--color-foam)" strokeWidth={0.5} />
+          <g>
+            <circle cx={s.x * sx} cy={Math.max(-2, s.depth)} r={1.1} fill="var(--color-alert)" stroke="var(--color-foam)" strokeWidth={0.3} />
+            <line
+              x1={s.x * sx}
+              y1={Math.max(-2, s.depth)}
+              x2={s.x * sx + s.facing * 2.4}
+              y2={Math.max(-2, s.depth)}
+              stroke="var(--color-alert)"
+              strokeWidth={0.3}
+            />
+          </g>
         </svg>
+
       </div>
       {cur && (
         <div
@@ -895,7 +987,7 @@ const HINTS: Partial<Record<Phase, string>> = {
   allDone: "A second reel waits at 40-45 m. Pick it up.",
   dive170: "Make one dive to 170 m or deeper and surface safely, doing all deco stops.",
   wreck4: "Tie the reel on the third wreck, follow the wall down to 200 m and tie off on the fourth wreck along the bottom.",
-  caves: "Flooded caves open in the far wall at 20, 40, 60 and 80 m. Tie a reel outside, keep it running and use the torch. Find the cave reel in the 40 m cave, surface in the dry chamber at the top of the 20 m cave, and swim through the deep caves: in at 60 m, out at 80 m (or the other way). Entering along a visible line is fine; losing sight of any line in the torch beam = fail. Brushing cave walls stirs silt. No gas is used in the dry chamber.",
+  caves: "A 100 m reel now lies on the third wreck (100-130 m): collect it for extra line. Flooded caves open in the far wall at 20, 40, 60 and 80 m. Tie a reel outside, keep it running and use the torch. Find the cave reel in the 40 m cave, surface in the dry chamber at the top of the 20 m cave, and swim through the deep caves: in at 60 m, out at 80 m (or the other way). Entering along a visible line is fine; losing sight of any line in the torch beam = fail. Brushing cave walls stirs silt. No gas is used in the dry chamber.",
   finished: "All current steps are done.",
   complete: "All current steps are done.",
 };
@@ -1061,6 +1153,7 @@ export function DiveGame() {
 
   function fail() {
     const s = g.current;
+    if (s.explore) return;
     closeLog(true);
     s.failAt = Date.now();
     s.x = s.save;
@@ -1410,6 +1503,16 @@ export function DiveGame() {
     setPhase("wreck4");
   }
 
+  /** After the Abyss Wreck badge a 100 m reel lies on the third wreck. */
+  function spawnReel4() {
+    const s = g.current;
+    if (s.reel4Taken || s.pickups.some((o) => o.kind === "reel4")) return;
+    const x = (W3.x0 + W3.x1) / 2;
+    s.pickups = [...s.pickups, { kind: "reel4", x, depth: bedDepth(x, s.worldW) - W3.h - 0.6 }];
+  }
+
+
+
   /** Is any laid line (or the running reel) within the torch beam? */
   function lineInLight() {
     const s = g.current;
@@ -1514,7 +1617,7 @@ export function DiveGame() {
     if (s.depth < 0.3) {
       s.dsmbLine = null;
     }
-    if (s.inWater && s.cave.inside !== "dry") {
+    if (s.inWater && s.cave.inside !== "dry" && !s.explore) {
       tank.bar = Math.max(0, tank.bar - (dtG * sac(s.depth)) / 60 / Math.max(1, tank.size));
       if (tank.bar <= 0) {
         fail();
@@ -1674,21 +1777,26 @@ export function DiveGame() {
     // sandy wall is solid: can't swim sideways into it (flooded caves are open)
     if (!free(s.x, s.depth, s.worldW)) s.x = prevX;
 
-    const locked = !!s.stop;
-    if (!locked) {
-      if (downKey) s.depth += vDown;
-      if (upKey) s.depth -= vUp;
-      if (!downKey && !upKey && s.depth > 0) {
-        if (s.hasKit && !noAir(s)) {
-          // scuba gear: neutral buoyancy — holds depth when no keys are pressed
-        } else {
-          // freediver: buoyancy fades with depth; neutral at ~4x diver height
-          const neutral = 6.8;
-          const buoyancy = Math.max(-0.5, Math.min(1, (neutral - s.depth) / neutral));
-          s.depth -= vUp * 0.35 * buoyancy;
-        }
+    const atStop = s.stop;
+    if (downKey) s.depth += vDown;
+    if (upKey) s.depth -= vUp;
+    if (!downKey && !upKey && s.depth > 0 && !atStop) {
+      if (s.hasKit && !noAir(s)) {
+        // scuba gear: neutral buoyancy — holds depth when no keys are pressed
+      } else {
+        // freediver: buoyancy fades with depth; neutral at ~4x diver height
+        const neutral = 6.8;
+        const buoyancy = Math.max(-0.5, Math.min(1, (neutral - s.depth) / neutral));
+        s.depth -= vUp * 0.35 * buoyancy;
       }
     }
+    if (atStop) {
+      // the stop ceiling only blocks ascent: the diver may always swim deeper
+      s.depth = Math.max(s.depth, atStop.lo);
+      // dropping out of the stop window below clears it; tissues resume on-gassing
+      if (s.depth > atStop.hi + 0.5) s.stop = null;
+    }
+
     s.depth = Math.max(0, s.depth);
     const bed = bedDepth(s.x, s.worldW) - 0.3;
     if (!free(s.x, s.depth, s.worldW)) {
@@ -1853,6 +1961,10 @@ export function DiveGame() {
       s.reelCap += 80;
       s.cave.reel = true;
       checkCave1();
+    }
+    if (k === "reel4") {
+      s.reelCap += 100;
+      s.reel4Taken = true;
     }
     if (k === "liftbag" && !s.items.includes("liftbag")) s.items = [...s.items, "liftbag"];
     if (k === "dsmb" && !s.items.includes("dsmb")) s.items = [...s.items, "dsmb"];
@@ -2239,6 +2351,7 @@ export function DiveGame() {
     }
     if (!hadW4 && connected("w3", "w4") && s.phase === "wreck4") {
       award("Abyss Wreck");
+      spawnReel4();
       setPhase("caves");
     }
     if (s.trimix && connected("w1", "beach") && !s.badges.includes("Shore Line")) award("Shore Line");
@@ -2472,6 +2585,7 @@ export function DiveGame() {
       const b = mk("w4", W4.x0 + 2);
       s.segs = [...s.segs, { id: s.seq++, a: a.id, b: b.id }];
       award("Abyss Wreck");
+      spawnReel4();
       return setPhase("caves");
     }
     if (p === "caves") {
@@ -2533,9 +2647,13 @@ export function DiveGame() {
   const logbookUnlocked = s.badges.includes("SporTechnical Diver");
   const nearLine = s.inWater && s.badges.includes("Stage") && !!nearSeg(s.x, s.depth, 2);
   const reelKnot = s.reel ? knot(s.reel.last) : null;
-  // one shared pool of line: spool + every reel
+  // shared pool under the hood, but shown as two separate counters
   const lineLeftM = lineAvail();
-  const lineCapM = lineTotal();
+  const spoolCapM = s.items.includes("spool") ? 20 : 0;
+  // reels pay out first, the finger spool is the last reserve
+  const spoolLeftM = Math.max(0, Math.min(spoolCapM, lineLeftM));
+  const reelLeftM = Math.max(0, lineLeftM - spoolCapM);
+
   const torchPct = TORCH[s.torch.lvl] ? Math.max(0, 1 - s.torch.used / TORCH[s.torch.lvl]!.min) * 100 : 0;
   const dpvPct = DPV[s.dpv.lvl] ? Math.max(0, 1 - s.dpv.used / DPV[s.dpv.lvl]!.min) * 100 : 0;
   const light = s.cave.inside ? 1 : Math.min(1, s.depth / 150);
@@ -2544,6 +2662,13 @@ export function DiveGame() {
   const curTank = s.tanks[s.active];
   const ppO2 = (curTank?.o2 ?? 0.21) * (s.depth / 10 + 1);
   const ppN2 = (1 - (curTank?.o2 ?? 0.21) - (curTank?.he ?? 0)) * (s.depth / 10 + 1);
+  // breathing gas density (g/L): only shown once Trimix blending is unlocked
+  const gasDens =
+    (s.depth / 10 + 1) *
+    ((curTank?.o2 ?? 0.21) * 1.429 +
+      (1 - (curTank?.o2 ?? 0.21) - (curTank?.he ?? 0)) * 1.25 +
+      (curTank?.he ?? 0) * 0.179);
+
 
   const seabed = `M ${BED(s.worldW).map(([x, y]) => `${x} ${y}`).join(" L ")} L ${s.worldW + 10} 240 L -10 240 Z`;
 
@@ -2838,17 +2963,34 @@ export function DiveGame() {
         })}
       </div>
 
-      {/* cheat mode */}
-      <button
-        type="button"
-        onClick={() => {
-          g.current.cheat = !g.current.cheat;
-          if (g.current.cheat) g.current.cheated = true;
-        }}
-        className="absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-alert/80 px-4 py-1 text-xs font-bold text-foam"
-      >
-        Cheat
-      </button>
+      {/* cheat mode + explore mode */}
+      <div className="absolute left-1/2 top-3 flex -translate-x-1/2 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            g.current.cheat = !g.current.cheat;
+            if (g.current.cheat) g.current.cheated = true;
+          }}
+          className="rounded-full bg-alert/80 px-4 py-1 text-xs font-bold text-foam"
+        >
+          Cheat
+        </button>
+        {s.badges.includes("Abyss Wreck") && (
+          <button
+            type="button"
+            onClick={() => {
+              g.current.explore = !g.current.explore;
+            }}
+            className={
+              s.explore
+                ? "rounded-full bg-badge px-4 py-1 text-xs font-bold text-sea-deep ring-2 ring-foam/70"
+                : "rounded-full bg-badge/40 px-4 py-1 text-xs font-bold text-foam"
+            }
+          >
+            {s.explore ? "Explore: ON" : "Explore"}
+          </button>
+        )}
+      </div>
       {s.cheat && (
         <div className="absolute left-1/2 top-12 w-[min(90vw,28rem)] -translate-x-1/2 rounded-2xl bg-sea-deep/90 p-4 text-sm text-foam shadow-2xl ring-1 ring-alert/60">
           <p>{HINTS[s.phase] ?? "Keep exploring."}</p>
@@ -2899,6 +3041,16 @@ export function DiveGame() {
                   <span className={ppN2 > 6 ? "text-alert" : ""}>PN2 {ppN2.toFixed(1)}</span>
                 </div>
               )}
+              {s.trimix && (
+                <div
+                  className={`mt-0.5 text-[10px] font-semibold ${
+                    gasDens > 6 ? "animate-pulse text-alert" : gasDens > 5.2 ? "text-sun" : "text-sea-shallow"
+                  }`}
+                >
+                  DENS {gasDens.toFixed(1)} g/L
+                </div>
+              )}
+
             </div>
           )}
           {s.hasPressureGauge &&
@@ -2983,9 +3135,10 @@ export function DiveGame() {
             >
               {(it === "spool" || it === "reel") && (
                 <span className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-foam">
-                  {Math.max(0, Math.round(lineLeftM))}/{Math.round(lineCapM)}m
+                  {Math.round(it === "spool" ? spoolLeftM : reelLeftM)}m
                 </span>
               )}
+
               {it === "torch" && (
                 <span className={`absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] font-bold ${s.torch.flooded ? "text-alert" : "text-foam"}`}>
                   {Math.round(torchPct)}%
