@@ -74,6 +74,18 @@
   --color-fin-grey: var(--fin-grey);
   --color-badge: var(--badge);
   --color-alert: var(--alert);
+  --color-hull: var(--hull);
+  --color-hull-dark: var(--hull-dark);
+  --color-hull-light: var(--hull-light);
+  --color-rust: var(--rust);
+  --color-growth: var(--growth);
+  --color-coral-pink: var(--coral-pink);
+  --color-coral-violet: var(--coral-violet);
+  --color-kelp: var(--kelp);
+  --color-sponge: var(--sponge);
+  --color-silt: var(--silt);
+  --color-rock: var(--rock);
+  --color-rock-dark: var(--rock-dark);
   --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
 }
