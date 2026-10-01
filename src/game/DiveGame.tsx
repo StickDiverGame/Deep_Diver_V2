@@ -2735,15 +2735,15 @@ export function DiveGame() {
             const bx = 6 + i * 11 + ((i * 29) % 5) * 0.8;
             if (bx > s.worldW) return null;
             const by = bedDepth(bx, s.worldW);
-            const w = 1.4 + ((i * 17) % 4) * 0.5;
-            return (
-              <path
-                key={`rk${i}`}
-                d={`M ${bx - w} ${by + 0.3} Q ${bx - w * 0.6} ${by - 0.9} ${bx} ${by - 0.75} Q ${bx + w * 0.7} ${by - 1} ${bx + w} ${by + 0.3} Z`}
-                fill={i % 2 ? "var(--color-rock)" : "var(--color-rock-dark)"}
-                opacity={0.5}
-              />
-            );
+             const w = 0.7 + ((i * 17) % 4) * 0.22;
+             return (
+               <path
+                 key={`rk${i}`}
+                 d={`M ${bx - w} ${by + 0.25} Q ${bx - w * 0.6} ${by - 0.45} ${bx} ${by - 0.38} Q ${bx + w * 0.7} ${by - 0.5} ${bx + w} ${by + 0.25} Z`}
+                 fill={i % 2 ? "var(--color-rock)" : "var(--color-rock-dark)"}
+                 opacity={0.3}
+               />
+             );
           })}
           {/* pebble and shell scatter on the sand */}
           {Array.from({ length: 90 }).map((_, i) => {
