@@ -16,7 +16,7 @@ function Bubbles({ x, y, cls }: { x: number; y: number; cls: string }) {
         [-3, 2.4, 0.6],
         [2, 1.4, 0.9],
       ].map(([dx, r, dl], i) => (
-        <circle key={i} cx={x + dx} cy={y} r={r} fill="var(--color-foam)" className="inf-rise" style={{ animationDelay: `${dl}s` }} />
+        <circle key={i} cx={x + (dx ?? 0)} cy={y} r={r} fill="var(--color-foam)" className="inf-rise" style={{ animationDelay: `${dl}s` }} />
       ))}
     </g>
   );
