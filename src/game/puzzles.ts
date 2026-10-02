@@ -1,5 +1,6 @@
 import type { AnimSpec, Extra, ManifoldVariant, ValveVariant } from "./DiverAnim";
 import type { StageVariant } from "./tech";
+import type { InflatorVariant } from "./inflator";
 
 export interface PuzzleOption {
   id: string;
@@ -7,6 +8,7 @@ export interface PuzzleOption {
   art?: ManifoldVariant;
   stage?: StageVariant;
   valve?: ValveVariant;
+  inflator?: InflatorVariant;
   correct?: boolean;
 }
 
@@ -217,4 +219,17 @@ export const stageCarryPuzzle: Puzzle = {
     stage: v,
     correct: v === "front",
   })),
+};
+
+/** Puzzle — K-style inflator: lock the QD hose, test inflate, test deflate. */
+export const inflatorPuzzle: Puzzle = {
+  key: "inflator",
+  options: [
+    { id: "k1", spec: { legs: "still", arms: "still" }, inflator: "correct", correct: true },
+    { id: "k2", spec: { legs: "still", arms: "still" }, inflator: "d1" },
+    { id: "k3", spec: { legs: "still", arms: "still" }, inflator: "d2" },
+    { id: "k4", spec: { legs: "still", arms: "still" }, inflator: "noSleeve" },
+    { id: "k5", spec: { legs: "still", arms: "still" }, inflator: "swap" },
+    { id: "k6", spec: { legs: "still", arms: "still" }, inflator: "noCorr" },
+  ],
 };

@@ -360,3 +360,32 @@
 @utility anim-fail { animation: fail-flash 0.7s ease-out both; }
 @utility anim-shake { animation: tile-shake 0.35s ease-in-out; }
 @utility anim-glow { animation: glow-pulse 1.6s ease-in-out infinite; }
+
+/* K-style inflator training mini-game */
+.inf * { transform-box: fill-box; }
+.inf-rise { animation: inf-rise 1.2s linear infinite; }
+@keyframes inf-rise { 0% { transform: translateY(0); opacity: .9 } 100% { transform: translateY(-16px); opacity: 0 } }
+.inf-flowIn, .inf-flowOut, .inf-bubOut, .inf-bubBottom, .inf-bubLeak, .inf-lock { opacity: 0; }
+.inf-flowIn, .inf-flowOut { animation: inf-dash .8s linear infinite; }
+@keyframes inf-dash { to { stroke-dashoffset: -22 } }
+.inf-correct .inf-lp { animation: inf-lp 8s infinite; }
+@keyframes inf-lp { 0%,12% { transform: translateY(16px) } 25%,90% { transform: translateY(0) } 100% { transform: translateY(16px) } }
+.inf-correct .inf-sleeve { animation: inf-sl 8s infinite; }
+@keyframes inf-sl { 0%,9% { transform: translateY(0) } 14%,25% { transform: translateY(5px) } 31%,100% { transform: translateY(0) } }
+.inf-correct .inf-lock { animation: inf-lk 8s infinite; }
+@keyframes inf-lk { 0%,30% { opacity: 0 } 33% { opacity: 1 } 38%,100% { opacity: 0 } }
+.inf-correct .inf-btnR, .inf-d2 .inf-btnR, .inf-noCorr .inf-btnR { animation: inf-br 8s infinite; }
+@keyframes inf-br { 0%,42% { transform: translateX(0) } 45%,60% { transform: translateX(-4px) } 63%,100% { transform: translateX(0) } }
+.inf-correct .inf-btnTop, .inf-d1 .inf-btnTop { animation: inf-bt 8s infinite; }
+@keyframes inf-bt { 0%,68% { transform: translateY(0) } 71%,88% { transform: translateY(4px) } 91%,100% { transform: translateY(0) } }
+.inf-correct .inf-flowIn, .inf-noCorr .inf-flowIn { animation: inf-dash .8s linear infinite, inf-win 8s infinite; }
+.inf-correct .inf-flowOut, .inf-d1 .inf-flowIn { animation: inf-dash .8s linear infinite, inf-wout 8s infinite; }
+.inf-correct .inf-bubOut { animation: inf-wout 8s infinite; }
+.inf-noCorr .inf-bubBottom, .inf-d2 .inf-bubOut { animation: inf-win 8s infinite; }
+.inf-d2 .inf-flowOut { animation: inf-dash .8s linear infinite, inf-win 8s infinite; }
+@keyframes inf-win { 0%,44% { opacity: 0 } 46%,60% { opacity: 1 } 62%,100% { opacity: 0 } }
+@keyframes inf-wout { 0%,70% { opacity: 0 } 72%,88% { opacity: 1 } 90%,100% { opacity: 0 } }
+.inf-noSleeve .inf-lp { animation: inf-ns 3s infinite; }
+@keyframes inf-ns { 0%,20% { transform: translateY(16px) } 40% { transform: translateY(5px) } 48% { transform: translateY(9px) } 55% { transform: translateY(5px) } 75%,100% { transform: translateY(16px) } }
+.inf-noSleeve .inf-bubLeak { animation: inf-lk2 3s infinite; }
+@keyframes inf-lk2 { 0%,38% { opacity: 0 } 42%,58% { opacity: 1 } 62%,100% { opacity: 0 } }
