@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { InflatorArt } from "./inflator";
 import { DiverAnim, ManifoldArt, ValveArt, type AnimSpec, type Extra } from "./DiverAnim";
 import { GEAR_NAMES, GearIcon, HUNT_GEAR, TECH_GEAR, type GearKind } from "./gear";
 import { CAVE_REEL, CAVE_WORLD, CaveArt, DRY, FAR_WALL, HALL, R_BEACH, SPIKES, TUNNELS, caveAt, caveBounds, type CaveId } from "./caves";
@@ -6,6 +7,7 @@ import { StageArt, W1, W2, W3, W4, WallDecor, WreckArt, type Span } from "./tech
 import { ceiling, freshDeco, loadTissues, maxAscentRate, ndt, stopDepth, stopTime, tts, type Deco } from "./buhlmann";
 import {
   bcdPuzzle,
+  inflatorPuzzle,
   breathOptions,
   earPuzzle,
   finsPuzzle,
@@ -38,6 +40,7 @@ type Phase =
   | "findKey"
   | "locker"
   | "bcdTrain"
+  | "inflatorTrain"
   | "regTrain"
   | "tankTrain"
   | "findDepthGauge"
@@ -240,6 +243,7 @@ const TRAIN_PHASES: Phase[] = [
   "maskTrain",
   "finsTrain",
   "bcdTrain",
+  "inflatorTrain",
   "regTrain",
   "tankTrain",
   "twinsetTrain",
@@ -268,6 +272,7 @@ const DIVE_PHASES: Phase[] = [
   "findKey",
   "locker",
   "bcdTrain",
+  "inflatorTrain",
   "regTrain",
   "tankTrain",
   "findDepthGauge",
@@ -317,6 +322,8 @@ function puzzleFor(phase: Phase): Puzzle | null {
       return finsPuzzle;
     case "bcdTrain":
       return bcdPuzzle;
+    case "inflatorTrain":
+      return inflatorPuzzle;
     case "regTrain":
       return regPuzzle;
     case "tankTrain":
@@ -962,6 +969,7 @@ const HINTS: Partial<Record<Phase, string>> = {
   findKey: "The key is at about 9-10 m.",
   locker: "The map doubled. Swim to the locker in the new area.",
   bcdTrain: "Tap Train: inflator on the jacket.",
+  inflatorTrain: "Tap Train: lock the LP hose, test inflate, then test deflate.",
   regTrain: "Tap Train: regulator in the mouth, breathing bubbles.",
   tankTrain: "Tap Train: opening the cylinder valve.",
   findDepthGauge: "Something is waiting at about 12 m in the new area.",
@@ -1315,6 +1323,9 @@ export function DiveGame() {
         setPhase("finDives");
         break;
       case "bcdTrain":
+        setPhase("inflatorTrain");
+        break;
+      case "inflatorTrain":
         award("Buoyancy Compensator");
         setPhase("regTrain");
         break;
@@ -1402,7 +1413,7 @@ export function DiveGame() {
       default:
         break;
     }
-    if (s.phase === "findKey" || ["locker", "bcdTrain", "regTrain", "tankTrain"].includes(s.phase))
+    if (s.phase === "findKey" || ["locker", "bcdTrain", "inflatorTrain", "regTrain", "tankTrain"].includes(s.phase))
       return 10.6;
     return 4;
   }
@@ -3529,6 +3540,8 @@ export function DiveGame() {
                 >
                   {opt.stage ? (
                     <StageArt variant={opt.stage} size={150} />
+                  ) : opt.inflator ? (
+                    <InflatorArt variant={opt.inflator} size={150} />
                   ) : opt.valve ? (
                     <ValveArt variant={opt.valve} size={150} />
                   ) : opt.art ? (
